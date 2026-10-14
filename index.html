@@ -1,0 +1,655 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f4">
+  <meta name="description" content="Un parcours gratuit et interactif pour apprendre Python, pas à pas.">
+  <title>LibreCode — apprendre Python gratuitement</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b26;
+      --muted: #64746e;
+      --green: #145b45;
+      --green-dark: #0d4635;
+      --mint: #e4f3eb;
+      --paper: #f7f8f4;
+      --white: #fff;
+      --line: #e2e8e2;
+      --yellow: #f5c96a;
+      --shadow: 0 16px 40px rgba(24, 52, 41, .08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--paper); }
+    button, textarea, input { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 5; width: 260px;
+      padding: 25px 18px; background: var(--white); border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 4px 8px 28px; }
+    .brand-mark {
+      width: 38px; height: 38px; display: grid; place-items: center;
+      color: white; background: var(--green); border-radius: 12px; font-weight: 850; font-size: 20px;
+    }
+    .brand-name { font-size: 19px; font-weight: 820; letter-spacing: -.6px; }
+    .brand-name span { color: var(--green); }
+    .nav-label { padding: 0 10px 9px; color: #84918b; font-size: 10px; font-weight: 800; letter-spacing: 1.3px; text-transform: uppercase; }
+    .nav { display: grid; gap: 5px; }
+    .nav-button {
+      border: 0; padding: 10px 11px; border-radius: 10px; background: transparent;
+      color: #53645d; text-align: left; font-size: 13px; font-weight: 650;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-button:hover, .nav-button.active { color: var(--green-dark); background: var(--mint); }
+    .nav-icon { width: 20px; text-align: center; font-size: 15px; }
+    .nav-index { margin-left: auto; color: #99a69f; font-size: 11px; }
+    .side-bottom { margin-top: auto; padding: 17px 9px 4px; }
+    .free-note { padding: 14px; border-radius: 14px; background: #f4f7f1; font-size: 12px; line-height: 1.55; color: var(--muted); }
+    .free-note strong { display: block; margin-bottom: 3px; color: var(--ink); font-size: 13px; }
+    .main { min-height: 100vh; margin-left: 260px; }
+    .topbar {
+      height: 68px; padding: 0 38px; display: flex; justify-content: space-between; align-items: center;
+      background: rgba(255,255,255,.82); border-bottom: 1px solid var(--line);
+    }
+    .breadcrumb { color: var(--muted); font-size: 13px; }
+    .top-progress { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+    .progress-track { width: 112px; height: 7px; overflow: hidden; background: #e9eee8; border-radius: 20px; }
+    .progress-fill { height: 100%; width: 0; background: #3c9a70; border-radius: inherit; transition: width .25s; }
+    .content { width: min(1120px, 100%); margin: 0 auto; padding: 34px 40px 70px; }
+    .hero {
+      position: relative; overflow: hidden; min-height: 260px; padding: 35px 40px;
+      border-radius: 24px; color: white; background: var(--green);
+      display: flex; align-items: center; box-shadow: var(--shadow);
+    }
+    .hero:after {
+      content: ""; position: absolute; width: 300px; height: 300px; right: 8%; top: -120px;
+      border: 1px solid rgba(255,255,255,.14); border-radius: 50%;
+      box-shadow: 0 0 0 28px rgba(255,255,255,.035), 0 0 0 58px rgba(255,255,255,.035);
+    }
+    .hero-copy { position: relative; z-index: 1; max-width: 650px; }
+    .eyebrow { margin: 0 0 12px; color: #b5e3ca; font-size: 11px; font-weight: 850; letter-spacing: 1.4px; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(30px, 4vw, 47px); line-height: 1.08; letter-spacing: -1.8px; }
+    .hero p:not(.eyebrow) { max-width: 520px; margin: 15px 0 21px; color: #d4e7dd; font-size: 15px; line-height: 1.65; }
+    .button {
+      border: 0; border-radius: 10px; padding: 11px 16px; color: white;
+      background: #eaa94f; font-weight: 800; font-size: 13px; box-shadow: 0 5px 14px rgba(0,0,0,.1);
+    }
+    .button:hover { filter: brightness(.96); transform: translateY(-1px); }
+    .button.green { color: white; background: var(--green); box-shadow: none; }
+    .button.light { color: var(--green-dark); background: #edf4ee; box-shadow: none; }
+    .button:disabled { cursor: not-allowed; opacity: .5; transform: none; }
+    .section-heading { margin: 34px 0 15px; display: flex; align-items: end; justify-content: space-between; gap: 12px; }
+    .section-heading h2 { margin: 0; font-size: 21px; letter-spacing: -.5px; }
+    .section-heading p { margin: 5px 0 0; color: var(--muted); font-size: 13px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+    .stat, .card, .lesson-panel, .exercise-card, .certificate-card, .info-card {
+      border: 1px solid var(--line); border-radius: 16px; background: var(--white);
+    }
+    .stat { padding: 16px 18px; }
+    .stat strong { display: block; font-size: 23px; letter-spacing: -.6px; }
+    .stat span { color: var(--muted); font-size: 12px; }
+    .module-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
+    .module-card {
+      width: 100%; padding: 17px; border: 1px solid var(--line); border-radius: 15px;
+      background: white; text-align: left; transition: transform .16s, border-color .16s;
+    }
+    .module-card:hover { border-color: #a8cbb7; transform: translateY(-2px); }
+    .module-top { display: flex; justify-content: space-between; align-items: center; }
+    .module-num { color: #85938c; font-size: 11px; font-weight: 800; letter-spacing: .7px; }
+    .module-status { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: #687971; background: #eff2ed; font-size: 12px; }
+    .module-status.done { color: white; background: #3b9a70; }
+    .module-card h3 { margin: 12px 0 5px; font-size: 16px; }
+    .module-card p { min-height: 36px; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .module-meta { margin-top: 14px; color: #87938d; font-size: 11px; }
+    .study-tip { margin-top: 22px; padding: 16px 18px; display: flex; gap: 12px; border: 1px solid #e9dfc6; border-radius: 14px; background: #fffaf0; }
+    .study-tip .tip-icon { font-size: 19px; }
+    .study-tip strong { font-size: 13px; }
+    .study-tip p { margin: 4px 0 0; color: #736d5c; font-size: 12px; line-height: 1.55; }
+    .lesson-head { margin-bottom: 23px; }
+    .text-link { padding: 0; border: 0; color: var(--green); background: none; font-size: 13px; font-weight: 750; }
+    .lesson-head .eyebrow { margin: 18px 0 8px; color: #4d9270; }
+    .lesson-head h1 { font-size: clamp(28px, 4vw, 39px); }
+    .lesson-head .lead { max-width: 720px; color: var(--muted); line-height: 1.7; }
+    .lesson-layout { display: grid; grid-template-columns: minmax(0, 1fr) 265px; gap: 19px; align-items: start; }
+    .lesson-main { display: grid; gap: 15px; }
+    .lesson-panel { padding: 21px; }
+    .lesson-panel h2 { margin: 0 0 10px; font-size: 17px; }
+    .lesson-panel p { color: #51635b; line-height: 1.72; font-size: 14px; }
+    .lesson-panel p:last-child { margin-bottom: 0; }
+    .code-block { position: relative; margin: 13px 0; padding: 16px; overflow-x: auto; border-radius: 12px; background: #172720; color: #e4f1e9; }
+    pre, code, textarea.editor { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
+    .code-block pre { margin: 0; font-size: 13px; line-height: 1.7; }
+    .code-caption { color: #acc0b3; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+    .lesson-aside { position: sticky; top: 18px; }
+    .aside-card { padding: 18px; border: 1px solid var(--line); border-radius: 15px; background: white; }
+    .aside-card h3 { margin: 0 0 11px; font-size: 14px; }
+    .aside-list { display: grid; gap: 9px; color: var(--muted); font-size: 12px; }
+    .aside-list div { display: flex; gap: 8px; line-height: 1.45; }
+    .aside-list span { color: #3c9a70; font-weight: 900; }
+    .exercise-card { overflow: hidden; }
+    .exercise-head { padding: 18px 20px 12px; }
+    .exercise-head .eyebrow { margin-bottom: 7px; color: #4d9270; font-size: 10px; }
+    .exercise-head h2 { margin: 0 0 6px; font-size: 17px; }
+    .exercise-head p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .editor-wrap { padding: 0 20px; }
+    textarea.editor {
+      width: 100%; min-height: 145px; resize: vertical; padding: 14px;
+      border: 1px solid #263c32; border-radius: 11px; outline: 0;
+      color: #e4f1e9; background: #172720; font-size: 13px; line-height: 1.6; tab-size: 4;
+    }
+    textarea.editor:focus { box-shadow: 0 0 0 3px rgba(64,153,109,.2); }
+    .exercise-actions { padding: 12px 20px 16px; display: flex; align-items: center; gap: 9px; }
+    .exercise-actions .button { padding: 9px 13px; font-size: 12px; }
+    .output-wrap { margin: 0 20px 18px; padding: 12px 14px; min-height: 52px; border-radius: 10px; background: #f3f6f2; }
+    .output-label { display: block; margin-bottom: 5px; color: #7c8982; font-size: 10px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+    .output { margin: 0; color: #3f5048; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.5; }
+    .output.success { color: #166a47; }
+    .output.error { color: #a0372e; }
+    .end-module { margin-top: 17px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .end-module small { color: var(--muted); line-height: 1.5; }
+    .certificate-card { max-width: 800px; margin: 24px auto; padding: 42px; border: 7px double #b9d4c2; text-align: center; }
+    .certificate-logo { color: var(--green); font-size: 13px; font-weight: 850; letter-spacing: 2px; text-transform: uppercase; }
+    .certificate-card h1 { margin: 26px 0 12px; font-family: Georgia, serif; font-size: clamp(32px, 5vw, 48px); letter-spacing: -1px; }
+    .certificate-card p { color: var(--muted); line-height: 1.7; }
+    .certificate-name { margin: 20px auto 8px; padding: 10px; max-width: 420px; border: 0; border-bottom: 1px solid #98bba5; outline: 0; background: transparent; text-align: center; font-family: Georgia, serif; font-size: 25px; }
+    .certificate-foot { margin-top: 30px; display: flex; justify-content: space-around; gap: 12px; color: #718078; font-size: 11px; }
+    .notice { max-width: 800px; margin: 15px auto; padding: 14px 16px; border-radius: 12px; background: #f1f4ef; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 22px; }
+    .info-card { padding: 19px; }
+    .info-card h2 { margin: 0 0 8px; font-size: 16px; }
+    .info-card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .toast { position: fixed; z-index: 9; right: 22px; bottom: 20px; max-width: min(380px, calc(100vw - 40px)); padding: 12px 16px; border-radius: 11px; color: white; background: #263b31; box-shadow: var(--shadow); font-size: 13px; }
+    .mobile-menu { display: none; border: 0; color: var(--green); background: none; font-size: 21px; }
+    @media (max-width: 900px) {
+      .sidebar { width: 220px; }
+      .main { margin-left: 220px; }
+      .content { padding: 28px 24px 55px; }
+      .topbar { padding: 0 24px; }
+      .lesson-layout { grid-template-columns: minmax(0, 1fr); }
+      .lesson-aside { position: static; }
+    }
+    @media (max-width: 650px) {
+      .sidebar { width: 280px; transform: translateX(-101%); transition: transform .2s; box-shadow: var(--shadow); }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .topbar { height: 58px; padding: 0 15px; }
+      .mobile-menu { display: inline-block; margin-right: 8px; }
+      .topbar-left { display: flex; align-items: center; }
+      .top-progress { gap: 6px; font-size: 11px; }
+      .progress-track { width: 65px; }
+      .content { padding: 20px 15px 45px; }
+      .hero { min-height: 260px; padding: 26px 23px; border-radius: 19px; }
+      .hero:after { right: -150px; }
+      .stats { gap: 8px; }
+      .stat { padding: 12px; }
+      .stat strong { font-size: 18px; }
+      .stat span { font-size: 10px; }
+      .module-grid, .info-grid { grid-template-columns: 1fr; }
+      .module-card p { min-height: 0; }
+      .section-heading { margin-top: 27px; }
+      .certificate-card { padding: 25px 15px; }
+      .certificate-foot { font-size: 9px; }
+    }
+    @media print {
+      body { background: white; }
+      .sidebar, .topbar, #app > :not(.certificate-print), .notice, .print-hide { display: none !important; }
+      .main { margin: 0; }
+      .content { width: 100%; padding: 0; }
+      .certificate-card { margin: 20px auto; box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand"><div class="brand-mark">L</div><div class="brand-name">Libre<span>Code</span></div></div>
+      <div class="nav-label">Ton espace</div>
+      <nav class="nav" aria-label="Navigation principale">
+        <button class="nav-button active" data-view="home"><span class="nav-icon">⌂</span>Accueil</button>
+        <button class="nav-button" data-view="certificate"><span class="nav-icon">◇</span>Mon certificat</button>
+        <button class="nav-button" data-view="about"><span class="nav-icon">i</span>À propos</button>
+      </nav>
+      <div class="nav-label" style="margin-top:24px">Cours Python</div>
+      <nav class="nav" id="module-nav" aria-label="Chapitres Python"></nav>
+      <div class="side-bottom">
+        <div class="free-note"><strong>Apprendre sans barrière</strong>Le cours et l'attestation sont gratuits. Ta progression reste sur cet appareil.</div>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-left"><button class="mobile-menu" id="menu-button" aria-label="Ouvrir le menu">☰</button><div class="breadcrumb" id="breadcrumb">Accueil / Python</div></div>
+        <div class="top-progress"><span id="top-progress-label">0 / 8 chapitres</span><div class="progress-track"><div class="progress-fill" id="top-progress-fill"></div></div></div>
+      </header>
+      <div class="content" id="app" tabindex="-1"></div>
+    </main>
+  </div>
+  <div id="toast" class="toast" hidden role="status"></div>
+  <script>
+    const modules = [
+      {
+        title: "Tes premiers pas", short: "Afficher du texte et comprendre une instruction.", duration: "15 min",
+        intro: "Tu vas faire connaissance avec Python en lui donnant ses premières instructions. Un programme est simplement une suite d'étapes que l'ordinateur suit dans l'ordre.",
+        sections: [
+          ["Une instruction à la fois", "La fonction print() affiche une information. Les parenthèses indiquent à Python ce qu'il doit afficher. Le texte se place entre guillemets simples ou doubles. Les espaces et les majuscules dans le texte affiché sont conservés."],
+          ["Les commentaires", "Un commentaire commence par #. Python l'ignore : il sert à expliquer ton intention à une personne qui lit le programme, ou à te rappeler pourquoi tu as écrit une ligne."]
+        ],
+        example: 'print("Bonjour, le monde !")\n# Python ignore cette ligne\nprint("Je commence à coder.")',
+        exercises: [
+          {title:"Ton premier message", prompt:'Affiche exactement le texte "Bonjour Python !" avec print().', starter:'# Écris ton instruction ici\n', tests:'', expected:"Bonjour Python !"},
+          {title:"Deux lignes de programme", prompt:'Affiche exactement ces deux lignes : "Je m’entraîne" puis "Python".', starter:'print("Je m’entraîne")\nprint("Python")\n', tests:'', expected:"Je m’entraîne\nPython"}
+        ]
+      },
+      {
+        title: "Variables et texte", short: "Enregistrer des informations et manipuler des chaînes.", duration: "20 min",
+        intro: "Une variable est un nom que tu donnes à une valeur pour la réutiliser. Les chaînes de caractères représentent du texte. Les noms clairs rendent ton programme plus facile à comprendre.",
+        sections: [
+          ["Créer et réutiliser une variable", "Avec nom = \"Amina\", Python associe le nom nom au texte Amina. Le signe = affecte une valeur ; il ne signifie pas « est égal à » comme en mathématiques. Tu peux ensuite passer nom à print()."],
+          ["Transformer et assembler du texte", "Les méthodes .title(), .upper() et .lower() modifient la présentation du texte. Une f-string, écrite avec f devant les guillemets, insère une variable dans une phrase : f\"Bonjour {nom}\"."]
+        ],
+        example: 'prenom = "amina"\nmessage = f"Bonjour, {prenom.title()} !"\nprint(message)',
+        exercises: [
+          {title:"Une présentation personnalisée", prompt:'Crée une variable prenom, construis message avec une f-string, puis affiche-le.', starter:'prenom = "Samira"\n# Construis le message avec une f-string et affiche-le\n', tests:'assert message == f"Bonjour, {prenom.title()} !"', expected:"Bonjour, Samira !"},
+          {title:"Nettoie une étiquette", prompt:'Crée une variable ville avec un nom écrit en minuscules et affiche-la en majuscules.', starter:'ville = "dakar"\n# Affiche la ville en majuscules\n', tests:'assert ville.upper() == "DAKAR"', expected:"DAKAR"}
+        ]
+      },
+      {
+        title: "Nombres et calculs", short: "Utiliser les nombres, opérations et conversions.", duration: "20 min",
+        intro: "Python sait calculer très vite. Les nombres entiers (int) et décimaux (float) permettent d'additionner, mesurer ou convertir. Attention : / produit une division décimale, tandis que // garde le quotient entier.",
+        sections: [
+          ["Les opérations utiles", "Addition : + ; soustraction : - ; multiplication : * ; division : /. L'exponentiation s'écrit **. Les parenthèses te permettent de rendre l'ordre des calculs explicite."],
+          ["Convertir une valeur", "La fonction str() transforme une valeur en texte et int() en nombre entier quand la valeur est convertible. C'est utile pour assembler une phrase avec un calcul."]
+        ],
+        example: 'prix = 12\nquantite = 3\ntotal = prix * quantite\nprint(f"Total : {total} euros")',
+        exercises: [
+          {title:"Le prix total", prompt:"Calcule le coût de 4 cahiers à 3 euros dans la variable total, puis affiche le résultat.", starter:'prix = 3\nquantite = 4\n# Calcule et affiche le total\n', tests:'assert total == 12', expected:"12"},
+          {title:"Convertir en heures", prompt:"Convertis 150 minutes en heures avec une division décimale et stocke le résultat dans heures.", starter:'minutes = 150\n# Calcule heures\n', tests:'assert heures == 2.5', expected:""}
+        ]
+      },
+      {
+        title: "Listes", short: "Ranger, lire et modifier plusieurs éléments.", duration: "25 min",
+        intro: "Une liste regroupe plusieurs valeurs dans un ordre précis. Elle est pratique pour stocker des cours, des tâches ou des résultats. Les indices commencent à zéro : le premier élément est liste[0].",
+        sections: [
+          ["Lire et modifier une liste", "Écris les éléments entre crochets, séparés par des virgules. Utilise append() pour ajouter un élément à la fin, len() pour compter les éléments et liste[-1] pour lire le dernier."],
+          ["Parcourir une liste", "La boucle for élément in liste exécute son bloc une fois pour chaque élément. Le bloc est délimité par son indentation : en Python, les espaces ont un vrai rôle."]
+        ],
+        example: 'matieres = ["maths", "art"]\nmatieres.append("Python")\nfor matiere in matieres:\n    print(matiere)',
+        exercises: [
+          {title:"Ta liste de matières", prompt:'Crée une liste matieres avec "français" et "sciences", puis ajoute "Python".', starter:'matieres = ["français", "sciences"]\n# Ajoute Python à la liste\n', tests:'assert matieres == ["français", "sciences", "Python"]', expected:""},
+          {title:"Compter les étapes", prompt:"Compte les éléments de etapes et enregistre le résultat dans nombre_etapes.", starter:'etapes = ["lire", "essayer", "recommencer"]\n# Calcule le nombre d’étapes\n', tests:'assert nombre_etapes == 3', expected:""}
+        ]
+      },
+      {
+        title: "Décider avec if", short: "Faire réagir un programme selon une condition.", duration: "25 min",
+        intro: "Un programme peut choisir quoi faire. Une condition est une question à laquelle Python répond par True (vrai) ou False (faux). Le bloc if s'exécute seulement si la condition est vraie.",
+        sections: [
+          ["Comparer des valeurs", "Utilise == pour tester l'égalité, != pour la différence, < ou > pour comparer des nombres, et <= ou >= pour inclure la limite. Ne confonds pas == (comparaison) avec = (affectation)."],
+          ["Choisir entre plusieurs cas", "Après if, elif teste un autre cas si le précédent est faux. else couvre tous les autres cas. N'oublie pas les deux-points et l'indentation du bloc."]
+        ],
+        example: 'score = 72\nif score >= 60:\n    print("Réussi !")\nelse:\n    print("Continue à pratiquer.")',
+        exercises: [
+          {title:"Vérifie l'âge", prompt:"Si age est supérieur ou égal à 18, donne à acces la valeur True, sinon False.", starter:'age = 20\n# Écris une condition if/else\n', tests:'assert acces is True', expected:""},
+          {title:"Un message selon le score", prompt:'Si score vaut au moins 50, affiche "Bravo", sinon affiche "Encore un effort".', starter:'score = 42\n# Écris les deux possibilités\n', tests:'', expected:"Encore un effort"}
+        ]
+      },
+      {
+        title: "Boucles", short: "Répéter une action sans recopier les instructions.", duration: "25 min",
+        intro: "Les boucles automatisent la répétition. Une boucle for parcourt les éléments d'une liste ou les nombres d'un intervalle. Une boucle while continue tant qu'une condition reste vraie.",
+        sections: [
+          ["Répéter un nombre de fois", "range(5) produit les nombres de 0 à 4. La borne finale est exclue. Tu peux aussi écrire range(1, 6) pour obtenir 1 à 5."],
+          ["Éviter une boucle infinie", "Avec while, assure-toi que quelque chose finit par rendre la condition fausse. Sinon le programme continue sans arrêt. Pour un nombre connu de répétitions, for est souvent plus simple."]
+        ],
+        example: 'for nombre in range(1, 4):\n    print(f"Essai numéro {nombre}")',
+        exercises: [
+          {title:"Les nombres pairs", prompt:"Construis une liste pairs contenant 0, 2, 4, 6 et 8 à l'aide d'une boucle for.", starter:'pairs = []\nfor nombre in range(0, 10, 2):\n    # Ajoute nombre dans la liste\n    pass\n', tests:'assert pairs == [0, 2, 4, 6, 8]', expected:""},
+          {title:"Additionner les prix", prompt:"Additionne les prix de la liste et stocke le résultat dans total.", starter:'prix = [2, 5, 3]\ntotal = 0\n# Parcours la liste et cumule les prix\n', tests:'assert total == 10', expected:""}
+        ]
+      },
+      {
+        title: "Fonctions", short: "Créer des outils réutilisables.", duration: "25 min",
+        intro: "Une fonction rassemble des instructions sous un nom. Tu la définis avec def, puis tu peux l'appeler autant de fois que nécessaire. Les paramètres lui transmettent des informations.",
+        sections: [
+          ["Définir et appeler", "Le code indenté après def appartient à la fonction. Définir une fonction ne l'exécute pas : il faut l'appeler, par exemple saluer(\"Awa\")."],
+          ["Renvoyer un résultat", "return renvoie une valeur à l'endroit où la fonction a été appelée. print() affiche quelque chose à l'écran ; return donne un résultat que le reste du programme peut réutiliser."]
+        ],
+        example: 'def doubler(nombre):\n    return nombre * 2\n\nresultat = doubler(6)\nprint(resultat)',
+        exercises: [
+          {title:"Écris une fonction", prompt:"Définis carre(nombre) qui renvoie le carré du nombre. La fonction doit utiliser return.", starter:'def carre(nombre):\n    # Renvoie le carré\n    pass\n', tests:'assert carre(4) == 16\nassert carre(0) == 0', expected:""},
+          {title:"Saluer une personne", prompt:'Définis saluer(prenom) qui renvoie la phrase "Bonjour, [prenom] !"', starter:'def saluer(prenom):\n    # Construis et renvoie la phrase\n    pass\n', tests:'assert saluer("Lina") == "Bonjour, Lina !"', expected:""}
+        ]
+      },
+      {
+        title: "Dictionnaires et mini-projet", short: "Organiser des données et assembler tes acquis.", duration: "35 min",
+        intro: "Un dictionnaire associe des clés à des valeurs : un prénom à un âge, un produit à son prix, ou une matière à sa note. Pour finir, tu vas assembler variables, conditions et fonctions dans un mini-projet.",
+        sections: [
+          ["Lire et modifier un dictionnaire", "Crée un dictionnaire avec des accolades : profil = {\"prenom\": \"Lina\"}. Lis une valeur avec profil[\"prenom\"] et ajoute ou remplace une entrée en affectant une nouvelle valeur à sa clé."],
+          ["Assembler les idées", "Découpe ton mini-projet en petites étapes : quelles données faut-il garder ? Quelles règles appliquer ? Quelle fonction peut aider ? Teste souvent, puis améliore ton code."]
+        ],
+        example: 'profil = {"prenom": "Lina", "langue": "français"}\nprint(profil["prenom"])',
+        exercises: [
+          {title:"Un profil simple", prompt:'Crée un dictionnaire profil avec les clés "nom" et "langue", puis vérifie que la langue est "français".', starter:'profil = {"nom": "Noor", "langue": "français"}\n# Affiche la langue\n', tests:'assert profil["langue"] == "français"', expected:"français"},
+          {title:"Mini-projet : calculer une moyenne", prompt:"Définis moyenne(notes) qui renvoie la moyenne des nombres de la liste. Teste-la avec [10, 14, 16] et affiche le résultat arrondi à deux décimales.", starter:'def moyenne(notes):\n    # Additionne les notes puis divise par leur nombre\n    pass\n\nprint(round(moyenne([10, 14, 16]), 2))', tests:'assert abs(moyenne([10, 14, 16]) - 40 / 3) < 0.000001', expected:"13.33"}
+        ]
+      }
+    ];
+
+    const STORAGE_KEY = "librecode-python-v1";
+    let storageAvailable = true;
+    let toastTimer;
+    let state = {completed: [], passed: [], lastModule: 0, learnerName: ""};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) state = {...state, ...JSON.parse(saved)};
+    } catch (error) {
+      storageAvailable = false;
+      console.error("Impossible de lire la progression locale :", error);
+    }
+    const app = document.getElementById("app");
+
+    function persist() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        storageAvailable = false;
+        console.error("Impossible d'enregistrer la progression locale :", error);
+        showToast("La progression ne peut pas être enregistrée sur cet appareil.");
+      }
+      updateProgress();
+    }
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { toast.hidden = true; }, 3500);
+    }
+    function esc(value) {
+      return String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+    }
+    function exerciseKey(moduleIndex, exerciseIndex) { return `${moduleIndex}-${exerciseIndex}`; }
+    function modulePassed(moduleIndex) {
+      return modules[moduleIndex].exercises.every((_, index) => state.passed.includes(exerciseKey(moduleIndex, index)));
+    }
+    function updateProgress() {
+      const completed = state.completed.length;
+      const label = document.getElementById("top-progress-label");
+      const fill = document.getElementById("top-progress-fill");
+      label.textContent = `${completed} / ${modules.length} chapitres`;
+      fill.style.width = `${Math.round(completed / modules.length * 100)}%`;
+      document.querySelectorAll("[data-module-nav]").forEach(button => {
+        const index = Number(button.dataset.moduleNav);
+        const mark = button.querySelector(".nav-index");
+        mark.textContent = state.completed.includes(index) ? "✓" : String(index + 1).padStart(2, "0");
+      });
+    }
+    function setActiveNav(view, moduleIndex) {
+      document.querySelectorAll(".nav-button").forEach(button => button.classList.remove("active"));
+      const button = view === "module"
+        ? document.querySelector(`[data-module-nav="${moduleIndex}"]`)
+        : document.querySelector(`[data-view="${view}"]`);
+      if (button) button.classList.add("active");
+      document.getElementById("sidebar").classList.remove("open");
+    }
+    function buildNav() {
+      const nav = document.getElementById("module-nav");
+      nav.innerHTML = modules.map((module, index) =>
+        `<button class="nav-button" data-module-nav="${index}"><span class="nav-icon">○</span>${esc(module.title)}<span class="nav-index">${String(index + 1).padStart(2, "0")}</span></button>`
+      ).join("");
+      nav.querySelectorAll("[data-module-nav]").forEach(button =>
+        button.addEventListener("click", () => openModule(Number(button.dataset.moduleNav)))
+      );
+    }
+    function renderHome() {
+      setActiveNav("home");
+      document.getElementById("breadcrumb").textContent = "Accueil / Python";
+      const lessonsDone = state.completed.length;
+      const exerciseCount = state.passed.length;
+      app.innerHTML = `
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Un cours libre, pour tout le monde</p>
+            <h1>Apprends Python.<br>À ton rythme.</h1>
+            <p>Des explications claires, des exercices à tester tout de suite et une attestation gratuite. Pas besoin d'expérience, ni de payer.</p>
+            <button class="button" id="start-button">${lessonsDone ? "Reprendre mon parcours" : "Commencer gratuitement"} <span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+        <div class="stats">
+          <div class="stat"><strong>${lessonsDone} / ${modules.length}</strong><span>chapitres terminés</span></div>
+          <div class="stat"><strong>${exerciseCount}</strong><span>exercices réussis</span></div>
+          <div class="stat"><strong>0 €</strong><span>cours et attestation</span></div>
+        </div>
+        <div class="section-heading"><div><h2>Ton parcours Python</h2><p>Apprends une notion, puis pratique-la dans l'éditeur.</p></div></div>
+        <div class="module-grid">${modules.map((module, index) => `
+          <button class="module-card" data-open-module="${index}">
+            <div class="module-top"><span class="module-num">CHAPITRE ${String(index + 1).padStart(2, "0")}</span><span class="module-status ${state.completed.includes(index) ? "done" : ""}">${state.completed.includes(index) ? "✓" : "→"}</span></div>
+            <h3>${esc(module.title)}</h3><p>${esc(module.short)}</p>
+            <div class="module-meta">${module.exercises.length} exercices · ${esc(module.duration)}</div>
+          </button>`).join("")}
+        </div>
+        <div class="study-tip"><div class="tip-icon">✦</div><div><strong>La meilleure façon d'apprendre : essayer.</strong><p>Après chaque petite leçon, écris le code toi-même, exécute-le, puis explique avec tes mots ce qui s'est passé. Reviens sur les notions demain : de courtes révisions espacées aident à les retenir.</p></div></div>
+      `;
+      document.getElementById("start-button").addEventListener("click", () => openModule(state.lastModule || 0));
+      app.querySelectorAll("[data-open-module]").forEach(button =>
+        button.addEventListener("click", () => openModule(Number(button.dataset.openModule)))
+      );
+    }
+    function renderModule(moduleIndex) {
+      const module = modules[moduleIndex];
+      state.lastModule = moduleIndex;
+      persist();
+      setActiveNav("module", moduleIndex);
+      document.getElementById("breadcrumb").textContent = `Python / Chapitre ${moduleIndex + 1}`;
+      const lessons = module.sections.map((section, index) => `
+        <section class="lesson-panel"><h2>${index + 1}. ${esc(section[0])}</h2><p>${esc(section[1])}</p></section>
+      `).join("");
+      const exercises = module.exercises.map((exercise, exerciseIndex) => {
+        const key = exerciseKey(moduleIndex, exerciseIndex);
+        const wasPassed = state.passed.includes(key);
+        return `
+          <section class="exercise-card" data-exercise="${exerciseIndex}">
+            <div class="exercise-head"><p class="eyebrow">EXERCICE ${exerciseIndex + 1} · ${wasPassed ? "RÉUSSI ✓" : "À TOI DE JOUER"}</p><h2>${esc(exercise.title)}</h2><p>${esc(exercise.prompt)}</p></div>
+            <div class="editor-wrap"><textarea class="editor" spellcheck="false" aria-label="Code Python pour ${esc(exercise.title)}"></textarea></div>
+            <div class="exercise-actions"><button class="button green run-button" data-run="${exerciseIndex}">▶ Exécuter et vérifier</button><button class="button light reset-button" data-reset="${exerciseIndex}">Réinitialiser</button></div>
+            <div class="output-wrap"><span class="output-label">Résultat</span><pre class="output ${wasPassed ? "success" : ""}" aria-live="polite">${wasPassed ? "Exercice déjà réussi. Tu peux le refaire pour t'entraîner." : "Le résultat de ton code s'affichera ici."}</pre></div>
+          </section>`;
+      }).join("");
+      app.innerHTML = `
+        <div class="lesson-head"><button class="text-link" id="back-home">← Tous les chapitres</button><p class="eyebrow">CHAPITRE ${String(moduleIndex + 1).padStart(2, "0")} · ${esc(module.duration)}</p><h1>${esc(module.title)}</h1><p class="lead">${esc(module.intro)}</p></div>
+        <div class="lesson-layout">
+          <div class="lesson-main">
+            ${lessons}
+            <section class="lesson-panel"><div class="code-caption">Exemple · lis, puis essaie de l'expliquer</div><div class="code-block"><pre>${esc(module.example)}</pre></div></section>
+            ${exercises}
+            <div class="end-module"><small id="module-completion-note">${modulePassed(moduleIndex) ? "Tous les exercices de ce chapitre sont réussis." : "Réussis les exercices pour valider ce chapitre."}</small><button class="button green" id="complete-module" ${modulePassed(moduleIndex) ? "" : "disabled"}>${state.completed.includes(moduleIndex) ? "Chapitre terminé ✓" : "Valider le chapitre"}</button></div>
+            ${moduleIndex < modules.length - 1 ? '<div><button class="button light" id="next-module">Chapitre suivant →</button></div>' : ""}
+          </div>
+          <aside class="lesson-aside"><div class="aside-card"><h3>Dans ce chapitre</h3><div class="aside-list"><div><span>✓</span>Lis les explications</div><div><span>✓</span>Étudie l'exemple</div><div><span>✓</span>Essaie les exercices</div><div><span>✓</span>Reviens pratiquer demain</div></div></div></aside>
+        </div>
+      `;
+      app.querySelectorAll(".editor").forEach((editor, index) => {
+        editor.value = module.exercises[index].starter;
+        editor.addEventListener("keydown", event => {
+          if (event.key === "Tab") {
+            event.preventDefault();
+            editor.setRangeText("    ", editor.selectionStart, editor.selectionEnd, "end");
+          }
+        });
+      });
+      document.getElementById("back-home").addEventListener("click", renderHome);
+      app.querySelectorAll("[data-run]").forEach(button =>
+        button.addEventListener("click", () => runExercise(moduleIndex, Number(button.dataset.run)))
+      );
+      app.querySelectorAll("[data-reset]").forEach(button =>
+        button.addEventListener("click", () => {
+          const index = Number(button.dataset.reset);
+          app.querySelectorAll(".editor")[index].value = module.exercises[index].starter;
+          app.querySelectorAll(".output")[index].textContent = "Code réinitialisé.";
+          app.querySelectorAll(".output")[index].className = "output";
+        })
+      );
+      document.getElementById("complete-module").addEventListener("click", () => {
+        if (!modulePassed(moduleIndex)) return;
+        if (!state.completed.includes(moduleIndex)) state.completed.push(moduleIndex);
+        state.completed.sort((a, b) => a - b);
+        persist();
+        renderModule(moduleIndex);
+        showToast("Chapitre validé ! Bravo pour ta pratique.");
+      });
+      const nextButton = document.getElementById("next-module");
+      if (nextButton) nextButton.addEventListener("click", () => openModule(moduleIndex + 1));
+    }
+    let skulptPromise;
+    function loadSkulpt() {
+      if (window.Sk && window.Sk.builtinFiles) return Promise.resolve();
+      if (skulptPromise) return skulptPromise;
+      skulptPromise = new Promise((resolve, reject) => {
+        const core = document.createElement("script");
+        core.src = "https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt.min.js";
+        core.onload = () => {
+          const library = document.createElement("script");
+          library.src = "https://cdn.jsdelivr.net/npm/skulpt@1.2.0/dist/skulpt-stdlib.js";
+          library.onload = resolve;
+          library.onerror = () => reject(new Error("La bibliothèque Python n'a pas pu être chargée."));
+          document.head.appendChild(library);
+        };
+        core.onerror = () => reject(new Error("L'interpréteur Python n'a pas pu être chargé. Vérifie ta connexion internet."));
+        document.head.appendChild(core);
+      });
+      skulptPromise = skulptPromise.catch(error => {
+        skulptPromise = undefined;
+        throw error;
+      });
+      return skulptPromise;
+    }
+    async function runPython(source) {
+      await loadSkulpt();
+      let output = "";
+      window.Sk.configure({
+        output: text => {
+          output += text;
+          if (output.length > 10000) throw new Error("La sortie dépasse 10 000 caractères.");
+        },
+        read: path => {
+          const files = window.Sk.builtinFiles && window.Sk.builtinFiles.files;
+          if (files && Object.prototype.hasOwnProperty.call(files, path)) return files[path];
+          throw new Error(`Fichier Python introuvable : ${path}`);
+        },
+        __future__: window.Sk.python3,
+        execLimit: 5000
+      });
+      await window.Sk.misceval.asyncToPromise(() =>
+        window.Sk.importMainWithBody("<stdin>", false, source, true)
+      );
+      return output;
+    }
+    async function runExercise(moduleIndex, exerciseIndex) {
+      const module = modules[moduleIndex];
+      const exercise = module.exercises[exerciseIndex];
+      const card = app.querySelector(`[data-exercise="${exerciseIndex}"]`);
+      const editor = card.querySelector(".editor");
+      const output = card.querySelector(".output");
+      const button = card.querySelector(".run-button");
+      button.disabled = true;
+      button.textContent = "Vérification…";
+      output.className = "output";
+      output.textContent = "Exécution de ton code…";
+      try {
+        const source = editor.value + (exercise.tests ? `\n\n# Vérifications de l'exercice\n${exercise.tests}\n` : "");
+        const result = await runPython(source);
+        const actual = result.trim();
+        if (exercise.expected && actual !== exercise.expected) {
+          output.className = "output error";
+          output.textContent = `Le programme s'exécute, mais le résultat attendu est :\n${exercise.expected}\n\nTon résultat :\n${actual || "(aucune sortie)"}\n\nRelis la consigne et réessaie.`;
+          return;
+        }
+        const key = exerciseKey(moduleIndex, exerciseIndex);
+        if (!state.passed.includes(key)) state.passed.push(key);
+        persist();
+        output.className = "output success";
+        output.textContent = `Bien joué, exercice réussi !${actual ? `\n\nSortie :\n${actual}` : ""}`;
+        card.querySelector(".eyebrow").textContent = `EXERCICE ${exerciseIndex + 1} · RÉUSSI ✓`;
+        const completeButton = document.getElementById("complete-module");
+        const note = document.getElementById("module-completion-note");
+        if (modulePassed(moduleIndex)) {
+          completeButton.disabled = false;
+          note.textContent = "Tous les exercices de ce chapitre sont réussis.";
+        }
+      } catch (error) {
+        console.error("Erreur pendant l'exécution de l'exercice :", error);
+        output.className = "output error";
+        output.textContent = `Une erreur a été détectée :\n${error && error.toString ? error.toString() : String(error)}\n\nVérifie l'orthographe, les parenthèses et l'indentation.`;
+      } finally {
+        button.disabled = false;
+        button.textContent = "▶ Exécuter et vérifier";
+      }
+    }
+    function openModule(index) {
+      if (index < 0 || index >= modules.length) return;
+      renderModule(index);
+      window.scrollTo({top: 0, behavior: "smooth"});
+    }
+    function renderCertificate() {
+      setActiveNav("certificate");
+      document.getElementById("breadcrumb").textContent = "Mon espace / Attestation";
+      const allDone = state.completed.length === modules.length && modules.every((_, index) => modulePassed(index));
+      app.innerHTML = `
+        <section class="lesson-head"><p class="eyebrow">TON PARCOURS, TA FIERTÉ</p><h1>Ton attestation</h1><p class="lead">Une preuve personnelle du travail accompli. Elle est gratuite, comme le reste du cours.</p></section>
+        ${allDone ? `
+          <div class="certificate-print"><div class="certificate-card">
+            <div class="certificate-logo">LibreCode · Apprendre librement</div>
+            <h1>Attestation de réussite</h1>
+            <p>Cette attestation confirme que</p>
+            <input class="certificate-name" id="learner-name" aria-label="Nom à inscrire sur l'attestation" placeholder="Ton nom" value="${esc(state.learnerName)}">
+            <p>a terminé le parcours d'initiation à Python et réussi les exercices pratiques associés.</p>
+            <div class="certificate-foot"><span>Parcours : Python — niveau débutant</span><span>Date : ${new Date().toLocaleDateString("fr-FR")}</span></div>
+          </div><div class="print-hide" style="text-align:center"><button class="button green" id="print-certificate">Imprimer ou enregistrer en PDF</button></div></div>
+          <div class="notice">Cette attestation est gratuite et non accréditée : elle témoigne de ton parcours sur LibreCode, mais ne remplace pas un diplôme officiel. Ta progression est enregistrée uniquement dans ce navigateur.</div>
+        ` : `
+          <div class="notice">L'attestation gratuite sera disponible après avoir réussi tous les exercices et validé les ${modules.length} chapitres. Progression actuelle : ${state.completed.length} / ${modules.length} chapitres.</div>
+          <button class="button green" id="go-course">Continuer le cours</button>
+        `}
+      `;
+      const name = document.getElementById("learner-name");
+      if (name) name.addEventListener("input", () => { state.learnerName = name.value; persist(); });
+      const print = document.getElementById("print-certificate");
+      if (print) print.addEventListener("click", () => window.print());
+      const go = document.getElementById("go-course");
+      if (go) go.addEventListener("click", () => openModule(state.lastModule || 0));
+    }
+    function renderAbout() {
+      setActiveNav("about");
+      document.getElementById("breadcrumb").textContent = "LibreCode / À propos";
+      app.innerHTML = `
+        <section class="lesson-head"><p class="eyebrow">APPRENDRE NE DEVRAIT PAS DÉPENDRE DE TON BUDGET</p><h1>Le savoir, en accès libre.</h1><p class="lead">LibreCode est une première version d'un espace d'apprentissage conçu pour être gratuit, pratique et accessible, où que tu sois.</p></section>
+        <div class="info-grid">
+          <article class="info-card"><h2>Un parcours original</h2><p>Les leçons présentent les notions fondamentales de Python avec des exemples et des exercices originaux. Le parcours s'inspire des bonnes pratiques de l'apprentissage par projet et par la pratique, sans reproduire le texte d'un livre.</p></article>
+          <article class="info-card"><h2>Interactif et privé</h2><p>Le code d'exercice est exécuté dans ton navigateur. Le site ne crée pas de compte et n'envoie pas ta progression à un serveur : elle reste dans le stockage local de ton navigateur.</p></article>
+          <article class="info-card"><h2>Gratuit, y compris l'attestation</h2><p>Aucun paiement ni abonnement n'est demandé. L'attestation de fin de parcours est gratuite, mais elle n'est pas un diplôme accrédité ni une certification professionnelle officielle.</p></article>
+          <article class="info-card"><h2>Connexion nécessaire pour coder</h2><p>Le site lui-même est servi depuis ton ordinateur. Pour charger l'interpréteur Python interactif la première fois, ton navigateur a besoin d'accéder à jsDelivr. Le reste du cours est léger et ne demande aucune installation.</p></article>
+        </div>
+        <div class="study-tip"><div class="tip-icon">✦</div><div><strong>Une méthode simple pour progresser</strong><p>Lis une courte explication, prédis ce que le code va faire, exécute-le, corrige une erreur à la fois, puis réessaie le lendemain sans regarder la réponse. Fais de petites séances régulières et transforme les exemples en projets qui t'intéressent.</p></div></div>
+      `;
+    }
+    function navigateView(view) {
+      if (view === "home") renderHome();
+      if (view === "certificate") renderCertificate();
+      if (view === "about") renderAbout();
+      window.scrollTo({top: 0, behavior: "smooth"});
+    }
+    document.querySelectorAll("[data-view]").forEach(button =>
+      button.addEventListener("click", () => navigateView(button.dataset.view))
+    );
+    document.getElementById("menu-button").addEventListener("click", () =>
+      document.getElementById("sidebar").classList.toggle("open")
+    );
+    buildNav();
+    updateProgress();
+    renderHome();
+    if (!storageAvailable) showToast("Le stockage local est indisponible : ta progression ne sera pas conservée.");
+  </script>
+</body>
+</html>
